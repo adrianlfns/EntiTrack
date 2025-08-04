@@ -1,0 +1,18 @@
+@* 
+ Loading component with configurable message.
+*@
+
+<div class="d-flex justify-content-center">
+  <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+<div class="d-flex justify-content-center">@LoadingMessage</div>
+
+@code {
+
+  [Parameter]
+  public string LoadingMessage { get; set; } = "Loading. Please wait...";
+
+
+}

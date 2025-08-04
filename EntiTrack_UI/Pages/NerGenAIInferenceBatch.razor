@@ -1,0 +1,361 @@
+@page "/ner_genai_inference_batch"
+
+
+@* 
+ Component to perform batch NER inference with google genAI
+*@
+
+@inject StateContainer StateContainer
+@inject APIManager APIManager
+
+@inject IJSRuntime JSRuntime
+
+<PageTitle>NER GenAI (Batch)</PageTitle>
+
+<h1 class="bd-title mb-1" id="content">Perform Named Entity Recognition (NER) from GenAI</h1>
+
+<GenAIInstructions></GenAIInstructions>
+
+@if (IsLoading)
+{
+  <LoadingComponent LoadingMessage=@LoadingMessage @ref="oLoadingComponentRef" />
+}
+
+<GenAIAccuracyDisclaimerAlert></GenAIAccuracyDisclaimerAlert>
+
+<SuccessAlert SuccessMessage=@SuccessMessage></SuccessAlert>
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card mt-1">
+      <div class="card-body">
+        <h5 class="card-title">Model</h5>
+        <div class="row mt-2">
+          <div class="col-lg-6 col-md-6">
+            <label for="inputPassword5">Google AI Studio API Key <span style="color:red;">(Required)</span></label>
+            <div class="input-group input-group-sm">
+              <input type="password" id="inputPassword5" @bind="GoogleGenAIAPIKey" class="form-control form-control-sm"
+                aria-describedby="passwordHelpBlock">
+              <div class="input-group-append">
+                <button class="btn btn-primary btn-sm" disabled="@IsLoading" type="button" @onclick="ValidateModels"><i
+                    class="bi bi-check-circle"></i> Validate</button>
+              </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(KeyValidationMessage))
+            {
+              <div style="color:red;">@KeyValidationMessage</div>
+            }
+            <small id="passwordHelpBlock" class="form-text  text-muted">
+              Get your API key <a target="_blank" href="https://aistudio.google.com/apikey"> here</a>
+            </small>
+          </div>
+
+          <div class="col-lg-6 col-md-6">
+            <label for="inputPassword5">AI Model <span style="color:red;">(Required)</span></label>
+            <select class="form-control form-control-sm" id="exampleFormControlSelect1" @bind="SelectedModelKey">
+              <option value="volvo" disabled>Select a model</option>
+              @foreach (var model in ModelDataCol)
+              {
+                <option value=@model.name>@model.display_name</option>
+              }
+            </select>
+            @if (!string.IsNullOrWhiteSpace(AIModelValidationMessage))
+            {
+              <div style="color:red;">@AIModelValidationMessage</div>
+            }
+            <small id="passwordHelpBlock" class="form-text  text-muted">
+              View model cards <a target="_blank" href="https://modelcards.withgoogle.com/model-cards"> here</a>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-1">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Text Files</h5>
+        <InputFile OnChange="HandleFileSelection" multiple accept=".txt" class="form-control form-control-sm" />
+        @if (!string.IsNullOrWhiteSpace(FileSelectionValidationMessage))
+        {
+          <div style="color:red;">@FileSelectionValidationMessage</div>
+        }
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Fields</h5>
+
+        @if (FieldToExtractCol is not null)
+        {
+          @foreach (FieldToExtract oFieldToExtract in FieldToExtractCol)
+          {
+            <Field FieldProp="@oFieldToExtract" OnDelete="OnFieldDelete" OnTextEntered="OnFieldTextEntered"></Field>
+          }
+        }
+        <button class="btn btn-primary btn-sm mt-1" @onclick="AddField"> <i class="bi bi-plus-circle"></i> Add
+          field</button>
+        @if (!string.IsNullOrWhiteSpace(FieldsValidationMessage))
+        {
+          <div style="color:red;">@FieldsValidationMessage</div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row mt-1">
+  <div class="col-xl-12">
+    <button class="btn btn-primary btn-sm w-100" title="Perform Named Entity Recognition (NER) from GenAI"
+      @onclick="PerformGenAINER" disabled="@IsLoading"><i class="bi bi-arrow-down-square"></i> Download NER
+      Data</button>
+  </div>
+</div>
+
+
+
+
+@code {
+
+  private LoadingComponent? oLoadingComponentRef;
+
+  public bool IsLoading;
+  public string LoadingMessage { get; set; } = string.Empty;
+
+  public string SuccessMessage { get; set; } = string.Empty;
+
+  private IEnumerable<ModelData> oModelDataCol = Enumerable.Empty<ModelData>();
+  IEnumerable<ModelData> ModelDataCol
+  {
+    get
+    {
+      return oModelDataCol;
+    }
+    set
+    {
+      oModelDataCol = value;
+      StateContainer.ModelDataCol = oModelDataCol;
+    }
+  }
+
+  private IReadOnlyList<IBrowserFile>? SelectedFiles { get; set; }
+
+  private string FileSelectionValidationMessage { get; set; } = string.Empty;
+
+  List<FieldToExtract> FieldToExtractCol { get; set; } = new List<FieldToExtract>() { new FieldToExtract() };
+
+
+
+
+
+  private string mstrSelectedModelKey = string.Empty;
+  public string SelectedModelKey
+  {
+    get
+    {
+      return mstrSelectedModelKey;
+    }
+    set
+    {
+      mstrSelectedModelKey = value;
+      StateContainer.SelectedGenAIModelKey = mstrSelectedModelKey;
+    }
+  }
+
+  public string GoogleGenAIAPIKey { get; set; } = string.Empty;
+
+  public string KeyValidationMessage { get; set; } = string.Empty;
+
+  public string AIModelValidationMessage { get; set; } = string.Empty;
+
+
+
+  public string FieldsValidationMessage { get; set; } = string.Empty;
+
+  protected override void OnInitialized()
+  {
+    GoogleGenAIAPIKey = StateContainer.GoogleGenAIAPIKey;
+    ModelDataCol = StateContainer.ModelDataCol;
+    SelectedModelKey = StateContainer.SelectedGenAIModelKey;
+  }
+
+  private void AddField()
+  {
+    FieldToExtractCol.Add(new FieldToExtract());
+  }
+
+
+
+  private void OnFieldTextEntered(FieldToExtract oField)
+  {
+    FieldToExtract? oLastField = FieldToExtractCol.LastOrDefault();
+    if (oLastField is null)
+    {
+      return;
+    }
+    if (oLastField == oField)
+    {
+      AddField();
+    }
+  }
+
+  private void OnFieldDelete(FieldToExtract oField)
+  {
+    FieldToExtractCol.Remove(oField);
+  }
+
+  private async Task PerformGenAINER()
+  {
+    SuccessMessage = string.Empty;
+    KeyValidationMessage = string.Empty;
+    if (string.IsNullOrWhiteSpace(GoogleGenAIAPIKey))
+    {
+      KeyValidationMessage = "Google API key is required";
+      return;
+    }
+
+    AIModelValidationMessage = string.Empty;
+    if (string.IsNullOrEmpty(SelectedModelKey))
+    {
+      AIModelValidationMessage = "AI model is required";
+      return;
+    }
+
+    FileSelectionValidationMessage = string.Empty;
+    if (SelectedFiles is null || !SelectedFiles.Any())
+    {
+      FileSelectionValidationMessage = "At least one file is required";
+      return;
+    }
+
+
+    FieldsValidationMessage = string.Empty;
+    if (FieldToExtractCol is null || !FieldToExtractCol.Any(p => !string.IsNullOrEmpty(p.FieldValue)))
+    {
+      FieldsValidationMessage = "Specify information for at least one field";
+      return;
+    }
+
+    IsLoading = true;
+    LoadingMessage = "Loading... Please wait.";
+    int intTotalFiles = SelectedFiles.Count;
+    int intCurrentFile = 1;
+
+    using (MemoryStream memoryStream = new MemoryStream())
+    {
+
+
+      using (System.Text.Json.Utf8JsonWriter writer = new System.Text.Json.Utf8JsonWriter(utf8Json: memoryStream, options: new
+      System.Text.Json.JsonWriterOptions
+      {
+        Indented = true
+      }))
+      {
+        writer.WriteStartArray(); // Start the outer JSON array
+
+
+        foreach (IBrowserFile oFile in SelectedFiles)
+        {
+          
+          LoadingMessage = "Loading... Please wait. Processing file " + intCurrentFile + " of " + intTotalFiles;
+          StateHasChanged();
+          
+         
+          using (Stream stream = oFile.OpenReadStream())
+          {
+            using (StreamReader oReader = new StreamReader(stream))
+            {
+              var strFileContent = await oReader.ReadToEndAsync();
+
+              APIManager.APIRes oRes =  await APIManager.GenAI_PerformGenAISingleNER(strGoogleGenAIAPIKey: GoogleGenAIAPIKey, 
+                                                                                        strModelKey: SelectedModelKey, 
+                                                                                        strTextToCheck:strFileContent, 
+                                                                                        oNerFields: FieldToExtractCol.Where(p => !string.IsNullOrEmpty(p.FieldValue)).Select(p =>
+              p.FieldValue).Distinct().ToList());
+
+              if(!oRes.Success_IND)
+              {
+                KeyValidationMessage = oRes.ErrorMessage;
+                IsLoading = true; 
+                return;
+              }  
+             
+              System.Text.Json.Nodes.JsonNode oDoc = System.Text.Json.Nodes.JsonNode.Parse(oRes.ResponseContent)!;
+              System.Text.Json.Nodes.JsonObject? oJsonObject = oDoc as System.Text.Json.Nodes.JsonObject;
+              oJsonObject?.Add("original_text", strFileContent);
+              oDoc?.WriteTo(writer);
+
+            }
+          }
+
+          intCurrentFile++;
+        }
+
+        writer.WriteEndArray(); // End the outer JSON array
+      }
+      memoryStream.Position = 0;
+
+      using (DotNetStreamReference streamRef = new DotNetStreamReference(stream: memoryStream))
+      {
+        DateTime now = DateTime.Now;
+        string strFileName = $"GenAIBatchProcess_{now.ToString("yyyy-MM-dd_HH-mm-ss")}.json";
+        await JSRuntime.InvokeVoidAsync("downloadFileFromStream", strFileName, streamRef);
+        SuccessMessage = $"Please check your downloads folder for the file.{strFileName}";
+      }
+    }
+
+    IsLoading = false;
+
+  }
+
+  private async Task ValidateModels()
+  {
+
+    KeyValidationMessage = string.Empty;
+    if (string.IsNullOrWhiteSpace(GoogleGenAIAPIKey))
+    {
+      KeyValidationMessage = "Google API key is required";
+      return;
+    }
+
+    IsLoading = true;
+
+    APIManager.APIRes oRes = await APIManager.GenAI_GetGoogleStudioListOfModels(strGoogleGenAIAPIKey:GoogleGenAIAPIKey);
+
+    if(!oRes.Success_IND)
+    {
+      KeyValidationMessage = oRes.ErrorMessage;
+      IsLoading = true; 
+      return;
+    } 
+
+    //parse the response here
+    try
+    {
+      ModelDataCol = System.Text.Json.JsonSerializer.Deserialize<List<ModelData>>(oRes.ResponseContent)!;
+      if (String.IsNullOrWhiteSpace(SelectedModelKey))
+      {
+        SelectedModelKey = "models/gemini-2.5-flash";
+      }
+    }
+    catch (Exception)
+    {
+      KeyValidationMessage = "Unable to understand the response from API key validation service.";
+      IsLoading = false;
+      return;
+    }
+
+    IsLoading = false;
+  }
+
+  private void HandleFileSelection(InputFileChangeEventArgs e)
+  {
+    SelectedFiles = e.GetMultipleFiles();
+    FileSelectionValidationMessage = string.Empty;
+  }
+
+}

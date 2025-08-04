@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{FA674B5A-3394-926C-2B1E-70E5B00E4A5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntiTrack_UI", "EntiTrack_UI.csproj", "{59391146-A7DE-522F-2032-C531F6D34B5C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{59391146-A7DE-522F-2032-C531F6D34B5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59391146-A7DE-522F-2032-C531F6D34B5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59391146-A7DE-522F-2032-C531F6D34B5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59391146-A7DE-522F-2032-C531F6D34B5C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{59391146-A7DE-522F-2032-C531F6D34B5C} = {FA674B5A-3394-926C-2B1E-70E5B00E4A5C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2BBFE162-9C09-4565-A467-26B930ABBBD3}
+	EndGlobalSection
+EndGlobal

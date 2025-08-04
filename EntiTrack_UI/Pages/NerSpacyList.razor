@@ -1,0 +1,154 @@
+@page "/ner_train_list"
+
+@* 
+ Component to list all the training sessions.
+*@
+
+@inject APIManager APIManager
+
+@using System.Text.Json
+
+<PageTitle>NER with trained model</PageTitle>
+<h1 class="bd-title mb-1" id="content">Named Entity Recognition (NER) trained models list</h1>
+
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+@if (IsLoading)
+{
+    <LoadingComponent />
+}
+
+ <div class="card shadow-sm"> 
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">My training sessions</h5>
+      </div>
+      <div class="card-body">
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-2">
+            <a class="btn btn-primary btn-sm" href="ner_train_add"><i class="bi bi-plus-circle"></i> Add training session</a>
+          </div> 
+
+          @if(this.TrainingResponseList is null || !TrainingResponseList.Any())  
+          {
+            <div class="alert alert-secondary text-center" role="alert">
+              You don't have any training sessions yet. Please create one to start making predictions.
+            </div>
+          }
+          else
+          {
+            <div class="row" id="content"> 
+              @foreach (var trainingSession in TrainingResponseList)
+              {
+                <div class="col-sm-6 col-lg-3 mb-1">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">@trainingSession.TrainingDescription</h5>                    
+                      <div class="mt-0 card-subtitle text-muted"><strong>NER Fields:</strong> @string.Join(", ",trainingSession.NerFields) </div>
+                      <div class="mt-0 card-subtitle text-muted small"><strong>Date Created:</strong> @trainingSession.DateCreated</div>
+                      <div class="mt-0 card-subtitle text-muted small"><strong>ID:</strong> @trainingSession.TrainingSessionId</div>
+
+                      <div class="col d-flex flex-row-reverse">
+                        <div class="p-1"> 
+                            <button class="btn btn-sm btn-secondary" @onclick="() => OnDeleteItem(trainingSession)" title="Remove Training Session" ><i class="bi bi-trash"></i></button>
+                        </div>
+                        <div class="p-1">
+                          <a href="./ner_train_inference/@trainingSession.TrainingSessionId" class="btn btn-sm btn-primary" title="Perform NER"><i class="bi bi-file-earmark-text"></i></a>
+                        </div>  
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } 
+
+        </div>      
+    </div>
+
+  @code{
+
+    public const string PageRoute= "/ner_train_list";
+    public async Task OnDeleteItem(TrainingSessionResponse oTrainingSession)
+    {
+      IsLoading = true;
+
+      APIManager.APIRes oRes = await APIManager.TrainedModel_RemoveSession(oTrainingSession.TrainingSessionId.ToString());
+
+      if(!oRes.Success_IND)
+      {
+        this.ErrorMessage = oRes.ErrorMessage;  
+        IsLoading = false;      
+        return;
+      }             
+
+      
+      bool blnResponseDeleted = false;
+      try
+      {
+        SimpleResponse oResponse = System.Text.Json.JsonSerializer.Deserialize<SimpleResponse>(oRes.ResponseContent)!;
+        if(oResponse != null)
+        {
+          blnResponseDeleted = oResponse.success;
+        }
+      }
+      catch(Exception ex)
+      {
+        System.Console.WriteLine(ex.Message);
+        this.ErrorMessage = "Unable to parse the response received. Error message: " + ex.Message ;
+        IsLoading = false;
+        return;
+      }
+
+      if(blnResponseDeleted)
+      {
+        TrainingResponseList.Remove(oTrainingSession);
+      }
+            
+      IsLoading = false;
+
+    }
+
+     public bool IsLoading;
+     public string ErrorMessage { get; set; } = string.Empty; 
+
+     List<TrainingSessionResponse> TrainingResponseList {get; set;} = new List<TrainingSessionResponse>();
+
+      protected override async Task OnInitializedAsync()
+      {
+          IsLoading = true;
+          // Simulate loading data
+          //perform API call
+          APIManager.APIRes oRes = await APIManager.TrainedModel_ListSessions();
+
+          if(!oRes.Success_IND)
+          {
+            this.ErrorMessage = oRes.ErrorMessage; 
+            IsLoading = false;       
+            return;
+          } 
+
+          // Process the result          
+          try
+          {
+            TrainingResponseList = JsonSerializer.Deserialize<List<TrainingSessionResponse>>(oRes.ResponseContent) ?? new List<TrainingSessionResponse>();
+          }
+          catch(Exception ex)
+          {
+            System.Console.WriteLine(ex.Message);
+            this.ErrorMessage = "Unable to parse the response received. Error message: " + ex.Message ;
+            IsLoading = false;
+            return;
+          } 
+
+          IsLoading = false;
+      }
+
+      
+
+
+  }

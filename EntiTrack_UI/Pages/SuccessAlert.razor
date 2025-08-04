@@ -1,0 +1,17 @@
+
+
+@* 
+ Component to render a success information message.
+*@
+
+@if (!string.IsNullOrWhiteSpace(SuccessMessage))
+{
+  <div class="alert alert-success" role="alert">
+    @SuccessMessage
+  </div>
+}
+
+@code {
+    [Parameter]
+    public string SuccessMessage { get; set; } = string.Empty;
+}

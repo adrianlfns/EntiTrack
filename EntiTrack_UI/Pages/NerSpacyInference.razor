@@ -1,0 +1,371 @@
+@page "/ner_train_inference/{TrainingSessionId?}"
+
+@* 
+ Component to perform NER given a training session ID. 
+ This component can be used to perform both: single inference and batch inference
+*@
+
+@inject APIManager APIManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>NER with trained model</PageTitle>
+
+@if(!string.IsNullOrEmpty(LoadingMessage))
+{
+<LoadingComponent LoadingMessage=@LoadingMessage/>
+}
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+ <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Training Session <small class="float-end">ID: @TrainingSession?.TrainingSessionId</small></h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-5">Description:</dt>
+                        <dd class="col-sm-7">@TrainingSession?.TrainingDescription</dd>
+
+                        <dt class="col-sm-5">Date Created:</dt>
+                        <dd class="col-sm-7">@TrainingSession?.DateCreated</dd>
+
+                        <dt class="col-sm-5">Valid Session:</dt>
+                        <dd class="col-sm-7">
+                            @if (TrainingSession is not null)
+                            {
+                              <span class="badge @(TrainingSession is not null && TrainingSession.IsValid ? "bg-success" : "bg-danger")">
+                                @(TrainingSession is not null && TrainingSession.IsValid ? "Yes" : "No")
+                              </span>
+                            } 
+                        </dd>
+                        @if (TrainingSession is not null && !TrainingSession.IsValid)
+                        {
+                            <dt class="col-sm-5">Invalid Reason:</dt>
+                            <dd class="col-sm-7 text-danger">@TrainingSession.InvalidMessage</dd>
+                        }
+                    </dl>
+                </div>                
+            </div>
+
+            @if (TrainingSession is not null && TrainingSession.IsValid)
+            {
+                if (TrainingSession.Performance != null)
+                {
+                    <button @onclick="ToggleViewPerformanceMetrics" disabled="@(!string.IsNullOrEmpty(LoadingMessage))" class="btn btn-primary btn-sm">@((ViewPerformanceMetrics)?"Hide Performance Metrics":"View Performance Metrics") </button>
+                    if(ViewPerformanceMetrics)
+                    {
+                        <hr class="my-4">
+                        <h6>Performance Metrics:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-6">Precision:</dt>
+                                    <dd class="col-sm-6">@TrainingSession.Performance.GlobalPrecision.ToString("P2")</dd>  
+
+                                    <dt class="col-sm-6">Recall:</dt>
+                                        <dd class="col-sm-6">@TrainingSession.Performance.GlobalRecall.ToString("P2")</dd> 
+
+                                    <dt class="col-sm-6">F1-Score:</dt>
+                                        <dd class="col-sm-6">@TrainingSession.Performance.GlobalF1Score.ToString("P2")</dd>  
+                                </dl>
+                            </div> 
+                            <div class="col-md-6"> 
+                                @if (TrainingSession is not null && TrainingSession.NerFields != null && TrainingSession.NerFields.Any())
+                                {
+                                    <ul class="list-group list-group-flush mb-3">
+                                        @foreach (var field in TrainingSession.NerFields)
+                                        {                                             
+                                            EntsPerTypeDetail entsPerTypeDetail;
+                                            TrainingSession.Performance.EntsPerType.TryGetValue(field, out entsPerTypeDetail!);
+                                            
+                                            <li class="list-group-item"><strong>@field</strong> @(entsPerTypeDetail is not null ? 
+                                                $"(Precision: {entsPerTypeDetail.Precision.ToString("P2")}, Recall: {entsPerTypeDetail.Recall.ToString("P2")}, F1-Score: {entsPerTypeDetail.F1Score.ToString("P2")})" : "(No data available)")
+                                            </li>
+                                        }
+                                    </ul>
+                                }                                
+                            </div>
+                        </div> 
+                    } 
+                }
+                <hr>                
+                
+                <div class="col-md-12 mt-1">
+                    <div class="alert alert-warning" role="alert"> 
+                        100% accuracy cannot be guaranteed. The diversity of text in the training data will determine the accuracy of the NER results.
+                    </div>
+                </div>  
+
+                <div class="row">
+
+                    <div class="col-md-12">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Single NER</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Batch NER</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                <div class="row mt-3">
+                                    <SuccessAlert SuccessMessage=@SuccessMessage></SuccessAlert>
+                                    <div class="col-md-6">
+                                        <label for="txtText" class="form-label">Perform NER on text <span style="color:red;">(Required)</span></label>
+                                        <textarea id="txtText" class="form-control" rows="3" placeholder="Enter text to perform NER..." @bind="NERInputText"></textarea>
+                                        @if(!string.IsNullOrWhiteSpace(TrainingDescriptionValidationMessage))
+                                        {
+                                            <div style="color:red;">@TrainingDescriptionValidationMessage</div>
+                                        } 
+                                    </div>
+                                    @if(EntitiesCol is not null && EntitiesCol.Any())
+                                    {
+                                        <div class="col-md-6">
+                                            <h6>NER Results:</h6>
+                                            <ul class="list-group">
+                                                @foreach (var entity in EntitiesCol)
+                                                {
+                                                    <li class="list-group-item">
+                                                        <strong>@entity.EntityLabel</strong>: @entity.EntityText  <small>  (Indexes: [@entity.EntityStartIndex - @entity.EntityEndIndex])</small>                                    
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div> 
+                                    } 
+                                </div>                                                                                           
+                                                
+                                <div class="col-md-12 mt-1">
+                                    <button class="btn btn-primary btn-sm w-100" disabled="@(!string.IsNullOrEmpty(LoadingMessage))" @onclick="PerformNER"  title="Perform NER"><i class="bi bi-file-earmark-text"></i> Perform NER with model</button>
+                                </div>
+
+                            </div>
+                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <label for="txtText" class="form-label">Text Files <span style="color:red;">(Required)</span></label>
+                                       <InputFile OnChange="HandleFileSelection" multiple accept=".txt" class="form-control form-control-sm" />
+                                        @if (!string.IsNullOrWhiteSpace(FileSelectionValidationMessage))
+                                        {
+                                        <div style="color:red;">@FileSelectionValidationMessage</div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mt-1">
+                                   <button class="btn btn-primary btn-sm w-100" disabled="@(!string.IsNullOrEmpty(LoadingMessage))" @onclick="PerformNERBatch"  title="Download NER"><i class="bi bi-arrow-down-square"></i> Download NER Data</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+  
+                    @if(!string.IsNullOrEmpty(LoadingMessage))
+                    {
+                     <div class="col-md-12 mt-1">
+                         <a class="btn btn-secondary btn-sm w-100" title="Go back to training sessions" href="./ner_train_list"><i class="bi bi-skip-backward-circle"></i> Go back to sessions</a>
+                     </div> 
+                    }
+
+                </div>            
+            } 
+        </div>
+    </div>
+
+@code
+{
+    public string NERInputText {get;set;} = string.Empty;
+
+    public string TrainingDescriptionValidationMessage { get; set; } = string.Empty;
+
+    IEnumerable<EntityDetail> EntitiesCol {get; set;} = new List<EntityDetail>();
+
+
+    public bool ViewPerformanceMetrics { get; set; } = false;
+
+    public TrainingSessionResponse TrainingSession { get; set; } = default!;
+    public string LoadingMessage  { get; set; } = string.Empty ;
+
+    [Parameter]
+    public string TrainingSessionId { get; set; } = string.Empty;
+
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    private IReadOnlyList<IBrowserFile>? SelectedFiles { get; set; }
+
+    private string FileSelectionValidationMessage { get; set; } = string.Empty;
+
+    public string SuccessMessage { get; set; } = string.Empty;
+
+    private void ToggleViewPerformanceMetrics()
+    {
+        ViewPerformanceMetrics = !ViewPerformanceMetrics;
+    }
+
+    protected override async Task OnParametersSetAsync() 
+    {
+
+        if (string.IsNullOrEmpty(TrainingSessionId))
+        {
+            ErrorMessage = "Invalid parameters passed. Expected training session";
+            return;
+        }
+
+        LoadingMessage = "Loading session metadata. Please wait.";
+
+        APIManager.APIRes oRes = await APIManager.TrainedModel_GetSessionMetadata(strTrainingSessionId:TrainingSessionId);
+
+        if(!oRes.Success_IND)
+        {
+            LoadingMessage = string.Empty;
+            this.ErrorMessage = "Unable to obtain training session data. Error message: " + oRes.ErrorMessage;  
+            return;
+        }         
+
+        // Process the result          
+        try
+        {
+            TrainingSession = System.Text.Json.JsonSerializer.Deserialize<TrainingSessionResponse>(oRes.ResponseContent) ?? new TrainingSessionResponse();
+        }
+        catch(Exception ex)
+        {
+            System.Console.WriteLine(ex.Message);
+            this.ErrorMessage = "Unable to parse the response received. Error message: " + ex.Message ;
+            return;
+        } 
+        finally
+        {
+            LoadingMessage = string.Empty;
+        }
+
+    }
+
+    public async Task PerformNERBatch()
+    {
+        SuccessMessage = string.Empty;
+        FileSelectionValidationMessage = string.Empty;
+
+        if (SelectedFiles is null || !SelectedFiles.Any())
+        {
+            FileSelectionValidationMessage = "At least one file is required";
+            return;
+        }
+
+        LoadingMessage = "Loading... Please wait.";
+        int intTotalFiles = SelectedFiles.Count;
+        int intCurrentFile = 1;     
+
+        using (MemoryStream memoryStream = new MemoryStream())
+        {
+
+            using (System.Text.Json.Utf8JsonWriter writer = new System.Text.Json.Utf8JsonWriter(utf8Json: memoryStream, options: new
+            System.Text.Json.JsonWriterOptions
+            {
+                Indented = true
+            }))
+            {
+                writer.WriteStartArray(); // Start the outer JSON array
+                foreach (IBrowserFile oFile in SelectedFiles)
+                {
+                    LoadingMessage = "Loading... Please wait. Processing file " + intCurrentFile + " of " + intTotalFiles;
+                    using (Stream stream = oFile.OpenReadStream())
+                    {
+                        using (StreamReader oReader = new StreamReader(stream))
+                        {
+                            var strUnstructuredText = await oReader.ReadToEndAsync();
+                            APIManager.APIRes oRes = await APIManager.TrainedModel_PerformSingleNER(strTrainingSessionId: TrainingSessionId, strUnstructuredText:strUnstructuredText);
+                            if(!oRes.Success_IND)
+                            {
+                              ErrorMessage = "Error performing NER: " + oRes.ErrorMessage;
+                              LoadingMessage = string.Empty;
+                              return;
+                            }                            
+
+                            System.Text.Json.Nodes.JsonNode oDoc = System.Text.Json.Nodes.JsonNode.Parse(oRes.ResponseContent)!;
+                            System.Text.Json.Nodes.JsonObject? oNerFields = oDoc as System.Text.Json.Nodes.JsonObject;
+
+                            System.Console.WriteLine(oNerFields);
+
+
+                             System.Text.Json.Nodes.JsonObject oMyObject = new System.Text.Json.Nodes.JsonObject()
+                             {
+                                ["original_text"] = oRes.ResponseContent,
+                                ["ner_fields"] =  oDoc 
+                             };
+
+                             oMyObject.WriteTo(writer);
+                            
+                        }
+                    }
+                    intCurrentFile++;
+                }
+                writer.WriteEndArray(); // End the outer JSON array
+            }
+
+            memoryStream.Position = 0;
+
+            using (DotNetStreamReference streamRef = new DotNetStreamReference(stream: memoryStream))
+            {
+            DateTime now = DateTime.Now;
+            string strFileName = $"NerBatchProcess_{now.ToString("yyyy-MM-dd_HH-mm-ss")}.json";
+            await JSRuntime.InvokeVoidAsync("downloadFileFromStream", strFileName, streamRef);
+            SuccessMessage = $"Please check your downloads folder for the file.{strFileName}";
+            }
+
+            LoadingMessage = string.Empty;
+        }
+    }
+
+
+
+    public async Task PerformNER()
+    {
+        TrainingDescriptionValidationMessage = string.Empty;    
+
+        if (string.IsNullOrEmpty(NERInputText))
+        {
+            TrainingDescriptionValidationMessage = "Please enter text to perform NER.";
+            return;
+        }
+
+        LoadingMessage = "Loading... Please wait.";
+
+        APIManager.APIRes oRes = await APIManager.TrainedModel_PerformSingleNER(strTrainingSessionId: TrainingSessionId, strUnstructuredText:NERInputText);
+        if(!oRes.Success_IND)
+        {
+            ErrorMessage = "Error performing NER: " + oRes.ErrorMessage;
+            LoadingMessage = string.Empty;
+            return;
+        }
+
+        // Process the result  
+        try
+        {
+            EntitiesCol = System.Text.Json.JsonSerializer.Deserialize<List<EntityDetail>>(oRes.ResponseContent) ?? new List<EntityDetail>();
+        } 
+        catch (Exception ex)
+        {
+            ErrorMessage = "Error parsing NER results: " + ex.Message;
+            return;
+        }
+
+        LoadingMessage = string.Empty;
+    }
+
+    private void HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        SelectedFiles = e.GetMultipleFiles();
+        FileSelectionValidationMessage = string.Empty;
+    }
+
+ 
+
+}

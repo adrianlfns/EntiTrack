@@ -1,0 +1,53 @@
+﻿
+@page "/"
+@* 
+Home page for this site and starting point.
+*@
+
+<PageTitle>Home</PageTitle>
+
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+  <div class="row row-cols-1 row-cols-md-2 g-4"> 
+
+   <div class="col">
+    <div class="card h-100 border-primary" style="max-width: 400px;">
+      <div class="card-body">
+        <h5 class="card-title text-center">Extract labeled data from text <b>without</b> training samples. (uses GenAI)</h5>
+        <p class="card-text">Extract labeled data from text, no training samples required. Simply tell us what fields you need to extract, and our Google Generative AI-powered tool will do the rest. To get started, you'll need a Google AI Studio API key.</p> 
+        <p class="card-text">Use when:</p>
+        <ul class="card-text">
+          <li>You don't have any training data.</li>      
+          <li>You want to leverage generative AI for entity extraction.</li>
+          <li>You don’t have any sensitive data and are comfortable submitting your information through a third-party service like Google.</li>
+          <li>You're prepared for potential charges associated with using generative AI services.</li>
+        </ul>        
+      </div>
+      <div class="card-footer bg-white d-flex justify-content-center gap-3">
+          <a href="ner_genai_inference" class="btn btn-primary btn-sm">Single Text Extraction</a> 
+          <a href="ner_genai_inference_batch" class="btn btn-primary btn-sm">Batch Text Extraction</a>
+      </div>
+    </div>
+   </div>
+
+    <div class="col">
+     <div class="card h-100 border-info" style="max-width: 400px;">
+      <div class="card-body">
+        <h5 class="card-title text-center">Extract labeled data from text <b>with</b> training samples.</h5>
+        <p class="card-text">You provide the structured data samples, and we'll handle the rest.</p>
+        <p class="card-text">Use when:</p> 
+        <ul class="card-text">
+          <li>You have training samples available.</li>      
+          <li>You prefer not to submit data to a third-party service like Google.</li>
+          <li>You want to avoid charges for using generative AI services.</li>
+        </ul>           
+      </div>
+      <div class="card-footer bg-white">
+        <a href="ner_train_list" class="btn btn-primary btn-sm w-100">Trained Text Extractor</a> 
+      </div> 
+    </div>     
+    </div>
+
+  </div>
+</div>
+
+ 

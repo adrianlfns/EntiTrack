@@ -1,0 +1,62 @@
+SOAP Note
+Patient Name: Anya Sharma
+Date of birth: 10/01/1990
+Date: July 8, 2025
+Time: 10:30 AM
+Subjective:
+
+Anya Sharma, a 45-year-old female, presents today complaining of right knee pain that started approximately 3 weeks ago. She describes the pain as a dull ache, intermittently sharp with certain movements. She rates the pain as a 4/10 at its best and 7/10 at its worst. The pain is aggravated by prolonged standing, climbing stairs, and squatting. She reports some morning stiffness lasting about 15 minutes, which improves with movement. She denies any specific injury, redness, swelling, warmth, locking, or instability. She has been taking over-the-counter ibuprofen (200mg) as needed, which provides mild, temporary relief. She is otherwise healthy and denies any other new or worsening symptoms.
+
+Objective:
+
+General Appearance: Well-nourished, well-groomed female, appearing her stated age, no acute distress.
+
+Vital Signs: BP 122/78, HR 72, RR 16, Temp 98.6°F.
+
+Musculoskeletal - Right Knee:
+
+Inspection: No visible swelling, erythema, or deformities. Quadriceps and hamstring musculature appear symmetrical to the left.
+
+Palpation: Mild tenderness along the medial joint line. No effusions or warmth. Patella ballotable.
+
+Range of Motion (ROM):
+
+Flexion: 0-130° (full, but pain at end range)
+
+Extension: 0° (full)
+
+Pain with active and passive ROM at end range flexion.
+
+Strength: 5/5 in knee flexion and extension bilaterally.
+
+Special Tests:
+
+Valgus Stress Test: Negative
+
+Varus Stress Test: Negative
+
+Lachman's Test: Negative
+
+Posterior Sag Test: Negative
+
+McMurray's Test: Positive with pain and click on medial rotation.
+
+Gait: Antalgic gait, favoring the right leg, with slight weight shift to the left.
+
+Assessment:
+
+45-year-old female presenting with chronic right knee pain aggravated by activity and positive McMurray's test. The most likely diagnosis at this time is right medial meniscal tear. Other less likely considerations include patellofemoral pain syndrome or early osteoarthritis.
+
+Plan:
+
+Imaging: Order X-ray of the right knee (AP, Lateral, Sunrise views) to rule out arthritic changes and MRI of the right knee to confirm meniscal pathology.
+
+Medication: Continue ibuprofen as needed. Discuss stronger anti-inflammatory options if pain persists.
+
+Physical Therapy: Refer to physical therapy for strengthening exercises, stretching, and pain management modalities.
+
+Activity Modification: Advise patient to avoid activities that exacerbate pain, such as prolonged squatting or climbing stairs, until further evaluation.
+
+Patient Education: Discuss the nature of meniscal tears, conservative management options, and potential surgical interventions if conservative measures fail.
+
+Follow-up: Schedule follow-up in 2 weeks to review imaging results and assess response to initial interventions.

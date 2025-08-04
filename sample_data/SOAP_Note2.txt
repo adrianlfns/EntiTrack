@@ -1,0 +1,49 @@
+SOAP Note
+Patient Name: Sarah Jenkins
+Date of Birth: 03/15/1990
+Date: July 8, 2025
+Time: 1:15 PM
+
+Subjective:
+
+Sarah Jenkins, a 35-year-old female, presents with a chief complaint of a sore throat that began approximately 3 days ago. She describes the pain as scratchy and constant, rating it 6/10 at its worst. She reports difficulty swallowing, especially solids, and states the pain radiates to her ears, particularly when yawning. Associated symptoms include a low-grade fever (max 100.5°F, self-reported), mild body aches, and fatigue. She denies cough, nasal congestion, hoarseness, rash, or shortness of breath. She tried gargling with salt water, which provided minimal temporary relief. She has no known allergies and no significant past medical history.
+
+Objective:
+
+General Appearance: Alert and oriented female, appears fatigued but in no acute distress. Speaking in a slightly hoarse voice.
+
+Vital Signs: BP 118/76, HR 80, RR 14, Temp 99.8°F.
+
+HEENT:
+
+Oropharynx: Erythematous posterior pharynx. Tonsils 2+ bilaterally, without exudates. Uvula midline. No peritonsillar swelling.
+
+Neck: Anterior cervical lymph nodes tender and slightly enlarged bilaterally. No posterior cervical or supraclavicular lymphadenopathy.
+
+Ears: Tympanic membranes clear bilaterally, no redness or bulging.
+
+Nose: Mucosa pink, no discharge.
+
+Lungs: Clear to auscultation bilaterally, no wheezes, rales, or rhonchi. Good air entry.
+
+Assessment:
+
+35-year-old female presenting with acute onset sore throat, low-grade fever, body aches, and fatigue, consistent with acute pharyngitis. Given the absence of cough, nasal congestion, and presence of tender anterior cervical lymphadenopathy, a streptococcal infection is a strong consideration. Viral pharyngitis is also a possibility.
+
+Plan:
+
+Rapid Strep Test: Perform rapid strep antigen detection test in-office to rule out Group A Streptococcus.
+
+Symptomatic Management:
+
+Encourage increased fluid intake.
+
+Recommend warm salt water gargles 3-4 times daily.
+
+Suggest over-the-counter pain relievers such as acetaminophen (e.g., Tylenol) or ibuprofen (e.g., Advil) for pain and fever.
+
+Advise use of throat lozenges or sprays for comfort.
+
+Patient Education: Discuss potential for bacterial vs. viral infection. If strep test is positive, explain the importance of completing the full course of antibiotics to prevent complications like rheumatic fever. Advise on good hand hygiene.
+
+Follow-up: If rapid strep test is positive, call patient with prescription for antibiotics. If negative, advise patient to return if symptoms worsen, develop difficulty breathing, or experience new symptoms.

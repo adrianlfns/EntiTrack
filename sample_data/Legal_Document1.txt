@@ -1,0 +1,69 @@
+Confidentiality Agreement (Non-Disclosure Agreement)
+This Confidentiality Agreement ("Agreement") is entered into as of this 8th day of July, 2025 (the "Effective Date"),
+
+BETWEEN:
+
+Innovatech Solutions Inc., a corporation duly organized and existing under the laws of the State of Delaware, with its principal place of business at 123 Tech Drive, Silicon Valley, CA 95000 (hereinafter referred to as "Disclosing Party");
+
+AND
+
+Global Research Labs LLC, a limited liability company duly organized and existing under the laws of the State of New York, with its principal place of business at 456 Science Avenue, New York, NY 10001 (hereinafter referred to as "Receiving Party").
+
+(Collectively referred to as the "Parties" and individually as a "Party")
+
+WHEREAS, the Disclosing Party possesses certain confidential and proprietary information which it desires to disclose to the Receiving Party for the purpose of exploring a potential collaborative research and development project concerning advanced AI algorithms (the "Permitted Purpose");
+
+WHEREAS, the Receiving Party is willing to receive such confidential information subject to the terms and conditions set forth herein;
+
+NOW, THEREFORE, in consideration of the mutual covenants and agreements contained herein, the Parties agree as follows:
+
+1. Definition of Confidential Information:
+"Confidential Information" shall mean any and all technical and non-technical information provided by the Disclosing Party to the Receiving Party in any form, whether oral, written, graphic, or electronic, relating to the Disclosing Party's current or future business, products, services, research, development, inventions, processes, designs, know-how, data, trade secrets, software, intellectual property, financial information, customer lists, business plans, and any other information which is marked as confidential or which, by its nature, would reasonably be understood to be confidential.
+
+2. Non-Disclosure and Non-Use Obligations:
+The Receiving Party agrees:
+a. To hold the Confidential Information in strict confidence and to take all reasonable precautions to prevent any unauthorized disclosure or use thereof.
+b. Not to disclose the Confidential Information to any third party without the prior written consent of the Disclosing Party.
+c. Not to use the Confidential Information for any purpose other than the Permitted Purpose.
+d. To limit access to the Confidential Information to its employees, agents, and contractors who have a "need to know" for the Permitted Purpose and who are bound by confidentiality obligations at least as restrictive as those contained herein.
+
+3. Exclusions from Confidential Information:
+The obligations of confidentiality under this Agreement shall not apply to any information that:
+a. Is or becomes publicly available through no fault of the Receiving Party.
+b. Is rightfully in the possession of the Receiving Party prior to its disclosure by the Disclosing Party, without breach of any obligation of confidentiality.
+c. Is independently developed by the Receiving Party without reference to the Confidential Information.
+d. Is rightfully obtained by the Receiving Party from a third party without restriction on disclosure.
+e. Is required to be disclosed by law, regulation, or court order, provided that the Receiving Party gives prompt written notice to the Disclosing Party of such requirement prior to disclosure, allowing the Disclosing Party an opportunity to seek a protective order or other appropriate remedy.
+
+4. Return of Confidential Information:
+Upon the Disclosing Party's written request, or upon termination of discussions concerning the Permitted Purpose, the Receiving Party shall promptly return to the Disclosing Party or destroy all Confidential Information (and all copies thereof) received from the Disclosing Party.
+
+5. Term:
+This Agreement shall commence on the Effective Date and shall continue in full force and effect for a period of two (2) years. Notwithstanding the foregoing, the obligations of confidentiality hereunder with respect to any specific Confidential Information shall survive the termination or expiration of this Agreement for a period of five (5) years from the date of disclosure of such Confidential Information.
+
+6. Governing Law and Jurisdiction:
+This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of laws principles. The Parties agree to submit to the exclusive jurisdiction of the state and federal courts located in the State of Delaware for the resolution of any disputes arising under this Agreement.
+
+7. Entire Agreement:
+This Agreement constitutes the entire agreement between the Parties concerning the subject matter hereof and supersedes all prior and contemporaneous agreements and understandings, whether written or oral, relating to such subject matter.
+
+8. Amendment:
+No amendment or modification of this Agreement shall be valid unless in writing and signed by duly authorized representatives of both Parties.
+
+IN WITNESS WHEREOF, the Parties have executed this Confidentiality Agreement as of the Effective Date first above written.
+
+DISCLOSING PARTY:
+
+Innovatech Solutions Inc.
+
+By: _________________________
+Name: [Authorized Signatory Name]
+Title: CEO
+
+RECEIVING PARTY:
+
+Global Research Labs LLC
+
+By: _________________________
+Name: [Authorized Signatory Name]
+Title: Head of Research

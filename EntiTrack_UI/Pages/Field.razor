@@ -1,0 +1,40 @@
+@* 
+ Field component. 
+ Represents a textbox with a button for delete. Used when multiple  fiels are grouped in a list.
+*@
+
+<div class="input-group input-group-sm"> 
+    <input type="text" placeholder="Field to extract (e.g., patient's date of birth)" @bind="FieldProp.FieldValue" @oninput="OnTextInput"  class="form-control form-control-sm mb-1 ">
+    <div class="input-group-append">
+        <button class="btn btn-primary btn-sm" type="button" @onclick="Remove" ><i class="bi bi-trash"></i> Remove</button>
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public EventCallback<FieldToExtract> OnTextEntered { get; set; }
+
+    [Parameter]
+    public EventCallback<FieldToExtract> OnDelete { get; set; }
+
+    [Parameter]
+    public FieldToExtract FieldProp{get;set;} = default!;
+
+    public async Task Remove()
+    {
+       await OnDelete.InvokeAsync(FieldProp);
+    }
+
+    public async Task OnTextInput(ChangeEventArgs e)
+    {
+        //string text_entered = e.Value as string;        
+        string strValue = e.Value as string ?? string.Empty; 
+        if (string.IsNullOrWhiteSpace(strValue))
+        {
+            return;
+        }
+        await OnTextEntered.InvokeAsync(FieldProp);
+    }
+
+}

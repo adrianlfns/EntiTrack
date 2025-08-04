@@ -1,0 +1,237 @@
+@page "/ner_train_add"
+
+@* 
+ Component to perform a new NER training session.
+*@
+
+@inject APIManager APIManager
+
+<PageTitle>New training session</PageTitle>
+<h1 class="bd-title mb-1" id="content">New training session</h1>
+
+<div class="alert alert-primary" role="alert">
+  <h4 class="alert-heading">Instructions</h4>
+  <ul>
+    <li>You’ll need a dataset containing text samples and the corresponding entities to extract.</li>
+    <li>The dataset must include a column containing the full text, along with one or more additional columns representing the extracted entities. For example, a record might include a column with the full address — such as '123 NW 123 AVE, Miami, FL, 33015' and separate columns for each entity: one for the Address ('123 NW 123 AVE'), one for the City ('Miami'), one for the State ('FL'), and one for the Zip Code ('33015').</li>
+    <li>You can find a sample dataset <a target="_blank" href="sample_files/GoodFile_us-train-dataset.csv">here</a>.</li>
+  </ul>
+</div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+
+ @if(IsLoading)
+  {
+  <LoadingComponent LoadingMessage="Training. Please wait..." />
+  }
+
+  @if(TrainingSession is null)
+  {
+    <div class="row">
+      <div class="col-lg-12 mb-1">
+        <label for="description" class="form-label">Training Description <span style="color:red;">(Required)</span></label>
+        <textarea id="description" rows="3" @bind="TrainingDescription"  class="form-control form-control-sm"></textarea> 
+        @if(!string.IsNullOrWhiteSpace(TrainingDescriptionValidationMessage))
+        {
+            <div style="color:red;">@TrainingDescriptionValidationMessage</div>
+        }                               
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+          <label for="fileInput" class="form-label">Dataset File <span style="color:red;">(Required)</span></label>
+          <InputFile id="fileInput" OnChange="@HandleFileSelected" class="form-control form-control-sm" accept=".csv" />
+          @if(!string.IsNullOrWhiteSpace(FileUploadValidationMessage))
+          {
+            <div style="color:red;">@FileUploadValidationMessage</div>
+          } 
+      </div>
+      <div class="col-lg-6">
+          <label for="fileInput" class="form-label">Unstructured Text Column <span style="color:red;">(Required)</span></label>
+          <select class="form-control form-control-sm" id="selectColumn" @bind="SelectedColumn">
+            <option value="" disabled>Select a column</option>
+            @foreach(var columnName in ColumnNames)
+            {
+                <option value=@columnName>@columnName</option>
+            }          
+          </select>
+          @if(!string.IsNullOrWhiteSpace(UnstructuredColumnValidationMessage))
+          {
+            <div style="color:red;">@UnstructuredColumnValidationMessage</div>
+          } 
+      </div>
+    </div>
+
+
+
+    <div class="row mt-3">
+      <div class="col-xl-12">
+        <button class="btn btn-primary btn-sm w-100" title="Train" @onclick="TrainSpacyModel" disabled="@IsLoading"><i class="bi bi-gear-wide"></i> Train Model</button>
+      </div>          
+    </div>
+  }
+  else
+  {
+
+    <div class="alert alert-success" role="alert">
+      <h3 class="alert-heading">Training completed successfully</h3>
+      <div>Training session ID: @TrainingSession.TrainingSessionId</div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col-xl-12">
+        <a class="btn btn-primary btn-sm w-100" href="./ner_train_inference/@TrainingSession.TrainingSessionId"  title="Perform NER"><i class="bi bi bi-file-earmark-text"></i> Perform NER with model</a>
+      </div>          
+    </div>
+  }
+
+  @if(!IsLoading)
+  {
+  <div class="row mt-3">
+    <div class="col-xl-12">
+      <a class="btn btn-secondary btn-sm w-100" title="Go back to training sessions" href="./ner_train_list" disabled="@IsLoading"><i class="bi bi-skip-backward-circle"></i> Go back to sessions</a>
+    </div>          
+  </div>
+  }
+
+
+@code
+{
+
+    public string TrainingDescription { get; set; } = string.Empty;
+
+    public string TrainingDescriptionValidationMessage { get; set; } = string.Empty;
+
+    public string SelectedColumn { get; set; } = string.Empty;
+    public string UnstructuredColumnValidationMessage { get; set; } = string.Empty;
+    private IEnumerable<string> ColumnNames{get;set;} = Enumerable.Empty<string>();
+
+    private TrainingSessionResponse TrainingSession {get; set;} = default!;
+
+    private string FileUploadValidationMessage{get; set;} = string.Empty;
+    private bool IsLoading{get; set;}
+
+    private string ErrorMessage{get; set;} = string.Empty;
+
+    private IBrowserFile? SelectedFile{get; set;}
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        ColumnNames = Enumerable.Empty<string>();  
+        this.ErrorMessage = string.Empty;        
+        SelectedFile = e.File;
+        SelectedColumn = string.Empty;
+        UnstructuredColumnValidationMessage = string.Empty;
+        try
+        {
+          using (var oStreamCopy = new MemoryStream())
+          {            
+              await SelectedFile.OpenReadStream().CopyToAsync(oStreamCopy);
+              oStreamCopy.Position = 0; 
+              Microsoft.Data.Analysis.DataFrame oDataFrame = Microsoft.Data.Analysis.DataFrame.LoadCsv(oStreamCopy, 
+                                                                                                        header: true,
+                                                                                                        numberOfRowsToRead:1);
+              ColumnNames = oDataFrame.Columns.Select(p=> p.Name).ToList();              
+              SelectedColumn = ColumnNames.FirstOrDefault() ?? string.Empty;
+          }
+        }
+        catch (Exception ex)
+        {
+            this.ErrorMessage = "The selected CSV file may not be valid. Error message: " + ex.Message;
+        }        
+    }       
+
+   
+
+    private async Task TrainSpacyModel()
+    {
+        IsLoading = true;
+        this.ErrorMessage = string.Empty;
+        UnstructuredColumnValidationMessage = string.Empty;
+        FileUploadValidationMessage = string.Empty;
+        TrainingDescriptionValidationMessage = string.Empty;
+        try 
+        {
+            if (SelectedFile is null)
+            {
+                FileUploadValidationMessage = "CSV file is required.";
+                return;
+            }
+
+            if(string.IsNullOrWhiteSpace(SelectedColumn))
+            {
+                UnstructuredColumnValidationMessage = "Unstructured text column is required.";
+                return;
+            }
+
+            if(string.IsNullOrWhiteSpace(TrainingDescription))
+            {
+                TrainingDescriptionValidationMessage = "Training description is required.";
+                return;
+            }
+
+
+            Stream oFileStream = SelectedFile.OpenReadStream();
+            string strFileName = SelectedFile.Name; 
+
+            APIManager.APIRes oRes =  await APIManager.TrainedModel_TrainNewModel(oStream: oFileStream, 
+                                                                                  strFileName: strFileName, 
+                                                                                  strUnstructuredColumnName:SelectedColumn, 
+                                                                                  strTrainingDescription: TrainingDescription);
+
+            if(!oRes.Success_IND)
+            {
+              this.ErrorMessage = $"An unexpected error occurred. Error Message: {oRes.ErrorMessage}";
+              IsLoading = false;      
+              return;
+            } 
+
+            if(!oRes.IsSuccessStatusCode)
+            {
+                //parse the error here
+                using (System.Text.Json.JsonDocument doc = System.Text.Json.JsonDocument.Parse(oRes.ResponseContent))
+                {
+                    System.Text.Json.JsonElement root = doc.RootElement;
+                    if (root.TryGetProperty("message", out System.Text.Json.JsonElement messageElement))
+                    {
+                        this.ErrorMessage = messageElement.GetString()!;  
+                    }
+                } 
+                if(string.IsNullOrEmpty(this.ErrorMessage))
+                {
+                    this.ErrorMessage = "An unexpected error occurred";
+                }               
+                return;
+            }      
+
+            // Process the result          
+            try
+            {
+                TrainingSession = System.Text.Json.JsonSerializer.Deserialize<TrainingSessionResponse>(oRes.ResponseContent) ?? new TrainingSessionResponse();
+            }
+            catch(Exception ex)
+            {
+              System.Console.WriteLine(ex.Message);
+              this.ErrorMessage = "Unable to parse the response received. Error message: " + ex.Message ;
+              IsLoading = false;
+              return;
+            } 
+
+      }
+      catch(Exception)
+      {
+        this.ErrorMessage = "An unexpected error occurred";
+      }
+      finally
+      {
+        IsLoading = false;
+      }
+    }
+ 
+}
